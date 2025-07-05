@@ -1,21 +1,6 @@
 import streamlit as st
 from utils.helpers import add_ingredient_to_csv
 
-def init_session_state():
-    st.session_state["form_data"] = {
-        "name": "",
-        "unit": "g",
-        "amount": 0.0,
-        "kcal": 0.0,
-        "protein": 0.0,
-        "fat": 0.0,
-        "carb": 0.0
-    }
-
-# session_storeの初期化
-if "form_data" not in st.session_state:
-    init_session_state()
-
 def make_input(label, key_prefix, type):
     input_key = f"{key_prefix}_input"
 
@@ -30,43 +15,7 @@ def make_input(label, key_prefix, type):
             on_change=input_changed)
 
 # 各 nutrient に対応するスライダーと入力の連動関数
-def make_slider_input(label, key_prefix, max_value=100.0):
-    slider_key = f"{key_prefix}_slider"
-    input_key = f"{key_prefix}_input"
-
-    def slider_changed():
-        st.session_state["form_data"][key_prefix] = round(st.session_state[slider_key],1)
-
-    def input_changed():
-        st.session_state["form_data"][key_prefix] = round(st.session_state[input_key],1)
-
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.slider(
-            label,
-            min_value=0.0,
-            max_value=max_value,
-            step=0.1,
-            value=st.session_state["form_data"][key_prefix],
-            key=slider_key,
-            on_change=slider_changed,
-            label_visibility="visible",
-            format="%.1f"
-        )
-    with col2:
-        st.number_input(
-            "手入力",
-            min_value=0.0,
-            max_value=max_value,
-            step=0.1,
-            value=st.session_state["form_data"][key_prefix],
-            key=input_key,
-            on_change=input_changed,
-            label_visibility="hidden",
-            format="%.1f"
-        )
-
-def make_slider_dynamic_input(key_prefix, dynamic_label=None, dynamic_max=None):
+def make_slider_input(key_prefix, dynamic_label=None, dynamic_max=None):
     slider_key = f"{key_prefix}_slider"
     input_key = f"{key_prefix}_input"
 
@@ -79,7 +28,6 @@ def make_slider_dynamic_input(key_prefix, dynamic_label=None, dynamic_max=None):
 
     # max_value を超えていたら補正
     if current_value > max_value:
-        # current_value = max_value
         current_value = 0.0
         st.session_state["form_data"][key_prefix] = current_value
 
@@ -113,28 +61,34 @@ def make_slider_dynamic_input(key_prefix, dynamic_label=None, dynamic_max=None):
             label_visibility="hidden"
         )
 
+# session_storeの初期化
+if "form_data" not in st.session_state:
+    st.session_state["form_data"] = {
+        "name": "",
+        "unit": "g",
+        "amount": 0.0,
+        "kcal": 0.0,
+        "protein": 0.0,
+        "fat": 0.0,
+        "carb": 0.0
+    }
+
 # ---------- フォーム外で数値UI ----------
 st.title("食材追加")
 make_input("食材名", "name", "text_input")
 make_input("単位を選択", "unit", "radio")
-# make_slider_input("量 (g)", "amount", 500.0)
-# 例: 単位が "g" か "個" かで最大値を変える
+
 unit = st.session_state["form_data"].get("unit", "g")
-
+# 例: 単位が "g" か "個" かで最大値を変える
 def get_max_by_unit():
-    return 500.0 if unit == "g" else 10.0
+    return 500.0 if unit  == "g" else 10.0
 
-make_slider_dynamic_input(
-    key_prefix="amount",
-    dynamic_label=f"量 ({unit})",
-    dynamic_max=get_max_by_unit
-)
-make_slider_input("カロリー (Kcal)", "kcal", 500.0)
-make_slider_input("タンパク質 (g)", "protein", 100.0)
-make_slider_input("脂質 (g)", "fat", 100.0)
-make_slider_input("炭水化物 (g)", "carb", 100.0)
+make_slider_input("amount", f"量 ({unit})", get_max_by_unit)
+make_slider_input("kcal", "カロリー (Kcal)", 500.0)
+make_slider_input("protein", "タンパク質 (g)", 100.0)
+make_slider_input("fat", "脂質 (g)", 100.0)
+make_slider_input("carb", "炭水化物 (g)", 100.0)
 
-st.write(st.session_state)
 # ---------- フォームで確認して送信 ----------
 with st.form("confirm_form"):
     st.subheader("送信前の確認")
@@ -162,3 +116,5 @@ with st.form("confirm_form"):
             st.success("登録しました！")
             add_ingredient_to_csv()
             st.rerun()
+
+st.write(st.session_state)

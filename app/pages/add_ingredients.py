@@ -80,4 +80,4 @@ with st.form("confirm_form"):
             init_form_data()
             st.rerun()
 
-st.write(st.session_state)  # デバッグ用にフォームデータを表示
+# st.write(st.session_state)  # デバッグ用にフォームデータを表示

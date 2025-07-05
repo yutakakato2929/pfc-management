@@ -72,6 +72,29 @@ def select_all_ingredients():
         rows = cur.fetchall()
         return [dict(row) for row in rows] 
     
+def select_all_records():
+    with get_connection() as conn:
+        cur = conn.cursor()
+        query = """
+        SELECT
+            cr.id,
+            cr.date,
+            cr.ingredient_id,
+            ing.name,
+            ing.unit,
+            cr.quantity,
+            cr.kcal,
+            cr.protein,
+            cr.fat,
+            cr.carb
+        FROM consumption_records cr
+        JOIN ingredients ing ON cr.ingredient_id = ing.id
+        ORDER BY cr.id ASC
+        """
+        cur.execute(query)
+        rows = cur.fetchall()
+        return [dict(row) for row in rows]
+
 def select_records_by_date(date_str: str):
     with get_connection() as conn:
         cur = conn.cursor()

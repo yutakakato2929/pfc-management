@@ -1,76 +1,52 @@
 import streamlit as st
 import pandas as pd
-import os
 from utils.db import insert_consumption
-from utils.helpers import get_today_str, get_records_by_date, get_totals
+from utils.components import show_pfc_selected_date, create_input
 
-# session_storeの初期化
+# フォームデータの初期化
+def init_add_calorie():
+    default_data = {
+        "amount": 0.0
+    }
+    st.session_state["add_calorie"] = default_data
+
+# 初期化
 if "add_calorie" not in st.session_state:
-    st.session_state["add_calorie"] = 0.0
+    init_add_calorie()
 
+# タイトル
 st.title("カロリー記録")
 
-today_str = get_today_str()
-today_records = get_records_by_date(today_str)
-kcal, p, f, c = get_totals(today_records)
+# 対象日付の総カロリー表示
+today_records = show_pfc_selected_date()
 
-st.subheader("今日の合計")
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("カロリー", f"{kcal:.0f} kcal")
-col2.metric("P（たんぱく質）", f"{p:.1f} g")
-col3.metric("F（脂質）", f"{f:.1f} g")
-col4.metric("C（炭水化物）", f"{c:.1f} g")
-
+# 食べたものを具体表示
 if today_records:
     df = pd.DataFrame(today_records)
     st.dataframe(df, use_container_width=True)
 
-st.subheader("食材を追加")
+# 食材選択
+st.subheader("食べたものを追加")
 df = pd.DataFrame(st.session_state.ingredients).T
 selected = st.selectbox("食材を選択", df["name"].tolist())
+if selected:
+    st.dataframe(df[df["name"] == selected], use_container_width=True)
+# 選択された食材情報取得
 selected_row = df[df["name"] == selected].iloc[0]
-# qty = st.number_input(f"何 {selected_row['unit']} 食べましたか？", min_value=0.0, step=0.1)
-slider_key = "_slider"
-input_key = "_input"
 
-def slider_changed():
-    st.session_state["add_calorie"] = round(st.session_state[slider_key],1)
+# 単位に応じた最大値を動的に設定
+unit = selected_row["unit"]
+max_amount = 1000.0 if unit == "g" else 10
+type = float if unit == "g" else int
 
-def input_changed():
-    st.session_state["add_calorie"] = round(st.session_state[input_key],1)
-
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.slider(
-        f"何 {selected_row['unit']} 食べましたか？",
-        min_value=0.0,
-        max_value=1000.0,
-        step=0.1,
-        value=st.session_state["add_calorie"],
-        key=slider_key,
-        on_change=slider_changed,
-        label_visibility="visible",
-        format="%.1f"
-    )
-with col2:
-    st.number_input(
-        "手入力",
-        min_value=0.0,
-        max_value=1000.0,
-        step=0.1,
-        value=st.session_state["add_calorie"],
-        key=input_key,
-        on_change=input_changed,
-        label_visibility="hidden",
-        format="%.1f"
-    )
+create_input(f"何{unit} 食べましたか？", "amount", input_type="slider", max_value=max_amount, session_name="add_calorie", value_type=type)
 
 if st.button("追加"):
-    factor = st.session_state["add_calorie"] / selected_row["amount"]
+    factor = st.session_state["add_calorie"]["amount"] / selected_row["amount"]
     record = {
-        "date": today_str,
+        "date": st.session_state.date_input.isoformat(),
         "ingredient_id": int(selected_row.name),
-        "quantity": st.session_state["add_calorie"],
+        "quantity": st.session_state["add_calorie"]["amount"],
         "kcal": round(selected_row["kcal"] * factor, 1),
         "protein": round(selected_row["protein"] * factor, 1),
         "fat": round(selected_row["fat"] * factor, 1),
@@ -81,5 +57,5 @@ if st.button("追加"):
     record["name"] = selected_row["name"]
     record["unit"] = selected_row["unit"]
     st.session_state["consumption_records"][record_id] = record
-
+    init_add_calorie()
     st.rerun()

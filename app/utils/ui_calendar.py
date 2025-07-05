@@ -1,21 +1,13 @@
 import calendar
-from datetime import datetime, date
+import streamlit as st
 import streamlit.components.v1 as components
 
-def render_calendar_with_records(records_by_date):
-    today = date.today()
-    year, month = today.year, today.month
-
-    # 日付 → カロリー合計 に変換
-    # calories_per_day = {}
-    # for d, records in records_by_date.items():
-    #     if d.startswith(f"{year}-{str(month).zfill(2)}"):
-    #         total_kcal = sum(r["kcal"] for r in records)
-    #         day = int(d.split("-")[2])
-    #         calories_per_day[day] = total_kcal
+def render_calendar_with_records():
+    target_day = st.session_state.date_input
+    year, month = target_day.year, target_day.month
 
     calories_per_day = {}
-    for record in records_by_date:
+    for d, record in st.session_state.consumption_records.items():
         record_date = record["date"]
         if record_date.startswith(f"{year}-{str(month).zfill(2)}"):
             day = int(record_date.split("-")[2])
@@ -29,33 +21,38 @@ def render_calendar_with_records(records_by_date):
     html = """
     <style>
     body {
-        font-family: 'Helvetica Neue', sans-serif;
-        color: #555;
+        font-family: 'Arial', sans-serif;
+        color: #333;
     }
 
     table.calendar {
-        background-color:#555;
         width: 100%;
-        border-collapse: separate;
-        border-spacing: 4px;
-        margin-top: 1em;
-        padding: 0 5px;
+        border-collapse: separate; /* セル間の隙間を有効にする */
+        margin: 1em 0;
+        border-radius: 6px; /* カレンダー全体の丸み */
+        overflow: hidden; /* 丸みを適用 */
     }
 
     .calendar th {
-        color: #ccc;
+        background-color: #f4f4f4;
+        color: #333;
         font-size: 14px;
-        padding: 8px;
+        padding: 5px;
+        text-align: center;
+        border-radius: 6px; /* ヘッダーセルの丸み */
+        border: 1px solid #ddd;
     }
 
     .calendar td {
-        background-color: #ccc;
-        color: #fff;
-        border-radius: 8px;
+        background-color: #fff;
+        color: #333;
+        border: 1px solid #ddd;
+        border-radius: 6px; /* 各セルの丸み */
         height: 80px;
         vertical-align: top;
         padding: 6px;
         position: relative;
+        # box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 軽い影を追加 */
     }
 
     .calendar .marked {
@@ -63,6 +60,7 @@ def render_calendar_with_records(records_by_date):
         border: 2px solid #b3f7ff;
         font-weight: bold;
         color: #fff;
+        border-radius: 6px; /* マークされたセルの丸み */
     }
 
     .calendar .day-num {
@@ -83,6 +81,10 @@ def render_calendar_with_records(records_by_date):
     </style>
     """
 
+    # カレンダーの高さを週数に応じて調整
+    num_weeks = len(month_days)
+    table_height = 80 * num_weeks + 230
+
     html += f"<h1>{year}年 {month}月</h3><table class='calendar'>"
 
     weekdays = ["日", "月", "火", "水", "木", "金", "土",]
@@ -102,4 +104,4 @@ def render_calendar_with_records(records_by_date):
         html += "</tr>"
 
     html += "</table>"
-    components.html(html, height=620)
+    components.html(html, height=table_height)

@@ -2,7 +2,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 import os
-from utils.db import select_records_by_date, select_all_ingredients
+from utils.db import select_all_records, select_all_ingredients
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -19,7 +19,7 @@ def get_records_by_date(str_date):
     return filtered_records
 
 # 対象リストの合計を取得
-def get_totals(records):
+def get_total_by_date(records):
     df = pd.DataFrame(records)
     if df.empty:
         return 0, 0, 0, 0
@@ -33,7 +33,7 @@ def get_totals(records):
 # SQLiteからデータを取得して、セッション状態を初期化
 def init_session_state():
 
-    consumption_records = select_records_by_date(get_today_str())
+    consumption_records = select_all_records()
     ingredients = select_all_ingredients()
     if "ingredients" not in st.session_state:
         st.session_state.ingredients = {

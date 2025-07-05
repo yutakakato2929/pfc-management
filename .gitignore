@@ -1,5 +1,5 @@
 venv
 layout_idea.md
 sample.html
-*.db
+app/data/*
 **/__pycache__/**

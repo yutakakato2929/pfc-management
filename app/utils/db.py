@@ -90,7 +90,7 @@ def select_all_records(user_id: str = None):
             cr.fat,
             cr.carb
         FROM consumption_records cr
-        JOIN ingredients ing ON cr.ingredient_id = ing.id
+        LEFT JOIN ingredients ing ON cr.ingredient_id = ing.id
         WHERE cr.user_id = ?
         ORDER BY cr.id ASC
         """
@@ -121,3 +121,61 @@ def select_all_records(user_id: str = None):
 #         cur.execute(query, (date_str,))
 #         rows = cur.fetchall()
 #         return [dict(row) for row in rows]
+
+# データ削除
+def delete_ingredient(id: int):
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM ingredients WHERE id = ?", (id,))
+        conn.commit()
+
+def delete_record(id: int):
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM consumption_records WHERE id = ?", (id,))
+        conn.commit()
+
+# データ更新
+def update_ingredient(id: int, value: dict):
+    with get_connection() as conn:
+        cur = conn.cursor()
+
+        # 動的にSET句を生成
+        columns = ", ".join([f"{k} = ?" for k in value.keys()])
+        sql = f"UPDATE ingredients SET {columns} WHERE id = ?"
+
+        # 値 + id を渡す
+        params = list(value.values()) + [id]
+
+        cur.execute(sql, params)
+        conn.commit()
+
+# データ更新
+def update_record(id: int, value: dict):
+    with get_connection() as conn:
+        cur = conn.cursor()
+
+        # 1. 既存のレコードを取得
+        cur.execute("SELECT quantity, kcal, protein, fat, carb FROM consumption_records WHERE id = ?", (id,))
+        row = cur.fetchone()
+        if row is None:
+            raise ValueError(f"Record with id {id} not found.")
+
+        old_quantity = row["quantity"]
+
+        # 2. もしquantityが更新されるなら、倍率を計算してPFC・kcalを更新
+        if "quantity" in value and old_quantity != 0:
+            new_quantity = value["quantity"]
+            ratio = new_quantity / old_quantity
+
+            for field in ["kcal", "protein", "fat", "carb"]:
+                if field in row and field not in value:
+                    value[field] = round(row[field] * ratio, 1)
+
+        # 3. 動的にUPDATE文を構築
+        columns = ", ".join([f"{k} = ?" for k in value.keys()])
+        sql = f"UPDATE consumption_records SET {columns} WHERE id = ?"
+        params = list(value.values()) + [id]
+
+        cur.execute(sql, params)
+        conn.commit()

@@ -7,7 +7,7 @@ def render_calendar_with_records():
     year, month = target_day.year, target_day.month
 
     calories_per_day = {}
-    for d, record in st.session_state.consumption_records.items():
+    for record in st.session_state.consumption_records:
         record_date = record["date"]
         if record_date.startswith(f"{year}-{str(month).zfill(2)}"):
             day = int(record_date.split("-")[2])

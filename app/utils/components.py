@@ -24,54 +24,6 @@ def show_pfc_selected_date():
 
     return select_day_records
 
-
-# def create_input(label, key, input_type="text", options=None, max_value=None, session_name="form_data"):
-#     slider_key = f"{key}_slider"
-#     input_key = f"{key}_input"
-
-#     def slider_changed():
-#         st.session_state[session_name][key] = round(st.session_state[slider_key],1) if input_type == "slider" else st.session_state[slider_key]
-
-#     def input_changed():
-#         st.session_state[session_name][key] = round(st.session_state[input_key], 1) if input_type == "slider" else st.session_state[input_key]
-
-#     if input_type == "text":
-#         st.text_input(label, key=input_key, on_change=input_changed)
-
-#     elif input_type == "radio":
-#         st.radio(label, options, horizontal=True, key=input_key, on_change=input_changed)
-    
-#     elif input_type == "slider":
-
-#         current_value = st.session_state[session_name].get(key, 0.0)
-#         if current_value > max_value:
-#             current_value = 0.0
-#             st.session_state[session_name][key] = current_value
-
-#         col1, col2 = st.columns([2, 1])
-#         with col1:
-#             st.slider(
-#                 label=label,
-#                 min_value=0.0,
-#                 max_value=max_value,
-#                 step=0.1,
-#                 value=current_value,
-#                 key=slider_key,
-#                 on_change=slider_changed,
-#                 format="%.1f"
-#             )
-#         with col2:
-#             st.number_input(
-#                 "手入力",
-#                 min_value=0.0,
-#                 max_value=max_value,
-#                 step=0.1,
-#                 value=current_value,
-#                 key=input_key,
-#                 on_change=input_changed,
-#                 label_visibility="hidden"
-#             )
-
 def create_input(label, key, input_type="text", options=None, max_value=None, session_name="form_data", value_type=float):
     slider_key = f"{key}_slider"
     input_key = f"{key}_input"

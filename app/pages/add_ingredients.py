@@ -1,7 +1,8 @@
 import streamlit as st
-from utils.db import insert_ingredient
+import pandas as pd
+from utils.db import insert_ingredient, delete_ingredient, update_ingredient, select_all_ingredients
 from utils.components import create_input
-from utils.helpers import get_user_id
+from utils.helpers import get_user_id, COLUMNS_TO_EXCLUDE_INGREDIENTS
 
 get_user_id()
 
@@ -79,9 +80,53 @@ with st.form("confirm_form"):
         else:
             form_data["user_id"] = st.session_state.user_id
             ingredient_id = insert_ingredient(form_data)
-            st.session_state["ingredients"][ingredient_id] = form_data
+            form_data["id"] = ingredient_id
+            st.session_state["ingredients"].append(form_data)
             st.success("登録しました！")
             init_form_data()
             st.rerun()
 
-# st.write(st.session_state)  # デバッグ用にフォームデータを表示
+df = pd.DataFrame(st.session_state.ingredients)
+if not df.empty:
+    df_excluded = df.drop(columns=COLUMNS_TO_EXCLUDE_INGREDIENTS)
+    unit = ['g', '個']
+    config = {
+        'name' : st.column_config.TextColumn('Name', required=True),
+        'unit' : st.column_config.SelectboxColumn('Unit', options=unit, required=True),
+        'amount' : st.column_config.NumberColumn('Amount', required=True),
+        'kcal' : st.column_config.NumberColumn('Kcal', required=True),
+        'protein' : st.column_config.NumberColumn('Protein', required=True),
+        'fat' : st.column_config.NumberColumn('Fat', required=True),
+        'carb' : st.column_config.NumberColumn('Carb', required=True),
+    }
+    edited_df = st.data_editor(df_excluded, key="editing_ingredients", hide_index=True, num_rows="dynamic", column_config=config, use_container_width=True)
+    if st.button("編集を保存"):
+        deleted_rows = st.session_state.editing_ingredients["deleted_rows"]
+        added_rows = st.session_state.editing_ingredients["added_rows"]
+        edited_rows = st.session_state.editing_ingredients["edited_rows"]
+        if not deleted_rows and not added_rows and not edited_rows:
+            st.error("編集がありません。")
+        else:
+            if len(deleted_rows) > 0:
+                for row in deleted_rows:
+                    deleted_map = st.session_state.ingredients[row]
+                    delete_ingredient(deleted_map["id"])
+                result = [item for i, item in enumerate(st.session_state.ingredients) if i not in deleted_rows]
+                st.session_state.ingredients = result
+                st.success("削除しました。")
+
+            if len(added_rows) > 0:
+                for row in added_rows:
+                    row.get("note", "")
+                    row["user_id"] = st.session_state.user_id
+                    ingredient_id = insert_ingredient(row)
+                    row["id"] = ingredient_id
+                    st.session_state["ingredients"].append(row)
+                st.success("登録しました！")
+
+            if len(edited_rows) > 0:
+                for key, value in edited_rows.items():
+                    update_id = st.session_state.ingredients[key]["id"]
+                    update_ingredient(update_id, value)
+                st.session_state.ingredients = select_all_ingredients(st.session_state.user_id)
+                st.success("更新しました！")

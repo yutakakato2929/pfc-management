@@ -5,6 +5,8 @@ import os
 import uuid
 from utils.db import select_all_records, select_all_ingredients
 
+COLUMNS_TO_EXCLUDE_RECORDS = ["id","date", "ingredient_id"]
+COLUMNS_TO_EXCLUDE_INGREDIENTS = ["id", "user_id"]
 BASE_DIR = os.path.dirname(__file__)
 
 # 今日日付取得
@@ -15,7 +17,7 @@ def get_today_str():
 def get_records_by_date(str_date):
     records = st.session_state.consumption_records
     filtered_records = [
-        v for v in records.values() if v["date"] == str_date
+        v for v in records if v["date"] == str_date
     ]
     return filtered_records
 
@@ -37,15 +39,17 @@ def init_session_state():
     consumption_records = select_all_records(st.session_state.user_id)
     ingredients = select_all_ingredients(st.session_state.user_id)
     if "ingredients" not in st.session_state:
-        st.session_state.ingredients = {
-            item["id"]: {k: v for k, v in item.items() if k != "id"}
-            for item in ingredients
-        }
+        # st.session_state.ingredients = {
+        #     item["id"]: {k: v for k, v in item.items() if k != "id"}
+        #     for item in ingredients
+        # }
+        st.session_state.ingredients = ingredients
     if "consumption_records" not in st.session_state:
-        st.session_state.consumption_records = {
-            item["id"]: {k: v for k, v in item.items() if k != "id"}
-            for item in consumption_records
-        }
+        # st.session_state.consumption_records = {
+        #     item["id"]: {k: v for k, v in item.items() if k != "id"}
+        #     for item in consumption_records
+        # }
+        st.session_state.consumption_records = consumption_records
 
 def ask_user_id():
     st.title("PFC管理アプリへようこそ:muscle:")

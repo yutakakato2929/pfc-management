@@ -12,7 +12,8 @@ if not st.session_state.consumption_records:
     st.info("まだデータがありません。")
 else:
     # データをDataFrameに変換
-    records = pd.DataFrame.from_dict(st.session_state.consumption_records, orient="index")
+    # records = pd.DataFrame.from_dict(st.session_state.consumption_records, orient="index")
+    records = pd.DataFrame(st.session_state.consumption_records)
     records["date"] = pd.to_datetime(records["date"])
 
     # タブの作成

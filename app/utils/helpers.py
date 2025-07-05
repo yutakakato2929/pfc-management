@@ -48,8 +48,8 @@ def init_session_state():
         }
 
 def ask_user_id():
-    st.title("PFCアプリへようこそ")
-    user_input = st.text_input("ユーザーIDを入力してください（例: mydiet2025）", key="user_input")
+    st.title("PFC管理アプリへようこそ:muscle:")
+    user_input = st.text_input("任意のユーザーIDを入力してください（例: taibeck2025）", key="user_input")
     
     if st.button("開始"):
         if user_input:

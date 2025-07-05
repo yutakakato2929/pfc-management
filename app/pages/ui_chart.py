@@ -1,22 +1,24 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+from utils.helpers import get_today_records
 
 st.title("統計")
 
-records_by_date = st.session_state.get("records_by_date", {})
+today_records = get_today_records()
 
-if not records_by_date:
+if not today_records:
     st.info("まだデータがありません。")
 else:
     # 日別にPFC合計を計算
+    kcal, p, f, c = 0, 0, 0, 0
     summary = []
-    for date, records in records_by_date.items():
-        kcal = sum(r["kcal"] for r in records)
-        p = sum(r["protein"] for r in records)
-        f = sum(r["fat"] for r in records)
-        c = sum(r["carb"] for r in records)
-        summary.append({"date": date, "kcal": kcal, "P": p, "F": f, "C": c})
+    for record in today_records:
+        kcal += record["kcal"]
+        p += record["protein"]
+        f += record["fat"]
+        c += record["carb"]
+    summary.append({"date": "ちょっとたいむ", "kcal": kcal, "P": p, "F": f, "C": c})
 
     df = pd.DataFrame(summary).sort_values("date", ascending=False)
     st.dataframe(df, use_container_width=True)

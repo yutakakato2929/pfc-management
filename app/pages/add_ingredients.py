@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.helpers import add_ingredient_to_csv
+from utils.db import insert_ingredient
 
 def make_input(label, key_prefix, type):
     input_key = f"{key_prefix}_input"
@@ -62,7 +62,7 @@ def make_slider_input(key_prefix, dynamic_label=None, dynamic_max=None):
         )
 
 # session_storeの初期化
-if "form_data" not in st.session_state:
+def init_form_data():
     st.session_state["form_data"] = {
         "name": "",
         "unit": "g",
@@ -70,8 +70,11 @@ if "form_data" not in st.session_state:
         "kcal": 0.0,
         "protein": 0.0,
         "fat": 0.0,
-        "carb": 0.0
+        "carb": 0.0,
+        "note": ""
     }
+if "form_data" not in st.session_state:
+    init_form_data()
 
 # ---------- フォーム外で数値UI ----------
 st.title("食材追加")
@@ -88,6 +91,7 @@ make_slider_input("kcal", "カロリー (Kcal)", 500.0)
 make_slider_input("protein", "タンパク質 (g)", 100.0)
 make_slider_input("fat", "脂質 (g)", 100.0)
 make_slider_input("carb", "炭水化物 (g)", 100.0)
+make_input("メモ", "note", "text_input")
 
 # ---------- フォームで確認して送信 ----------
 with st.form("confirm_form"):
@@ -101,6 +105,8 @@ with st.form("confirm_form"):
     col5.metric("脂質", f"{form_data["fat"]} g")
     col6.metric("炭水化物", f"{form_data["carb"]} g")
 
+    st.text(f"メモ: {form_data["note"]}")
+
     submitted = st.form_submit_button("記録を追加")
     if submitted:
         errors = []
@@ -113,8 +119,10 @@ with st.form("confirm_form"):
             for e in errors:
                 st.error(e)
         else:
+            ingredient_id = insert_ingredient(form_data)
+            st.session_state["ingredients"][ingredient_id] = form_data
             st.success("登録しました！")
-            add_ingredient_to_csv()
+            init_form_data()
             st.rerun()
 
 st.write(st.session_state)

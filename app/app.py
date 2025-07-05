@@ -1,9 +1,19 @@
 import streamlit as st
 from pathlib import Path
+from utils.db import init_db
+from utils.helpers import init_session_state
 
 CURRENT_DIR = Path(__file__).resolve().parent
 
 def main():
+
+    # DB初期化
+    init_db()
+
+    # session_stateの初期化
+    init_session_state()
+
+    # ページの設定
     home_page = st.Page(CURRENT_DIR / "pages" / "home.py", title="ホーム", default=True)
     ui_chart_page = st.Page(CURRENT_DIR / "pages" / "ui_chart.py", title="統計")
     add_calorie_page = st.Page(CURRENT_DIR / "pages" / "add_calorie.py", title="カロリー記録")

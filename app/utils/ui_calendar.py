@@ -7,12 +7,19 @@ def render_calendar_with_records(records_by_date):
     year, month = today.year, today.month
 
     # 日付 → カロリー合計 に変換
+    # calories_per_day = {}
+    # for d, records in records_by_date.items():
+    #     if d.startswith(f"{year}-{str(month).zfill(2)}"):
+    #         total_kcal = sum(r["kcal"] for r in records)
+    #         day = int(d.split("-")[2])
+    #         calories_per_day[day] = total_kcal
+
     calories_per_day = {}
-    for d, records in records_by_date.items():
-        if d.startswith(f"{year}-{str(month).zfill(2)}"):
-            total_kcal = sum(r["kcal"] for r in records)
-            day = int(d.split("-")[2])
-            calories_per_day[day] = total_kcal
+    for record in records_by_date:
+        record_date = record["date"]
+        if record_date.startswith(f"{year}-{str(month).zfill(2)}"):
+            day = int(record_date.split("-")[2])
+            calories_per_day[day] = calories_per_day.get(day, 0) + record["kcal"]
 
     # カレンダー作成
     cal = calendar.Calendar(firstweekday=6)  # 0=月曜, 6=日曜

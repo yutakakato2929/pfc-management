@@ -3,13 +3,21 @@ import pandas as pd
 import streamlit as st
 import logging
 import os
+from utils.db import select_records_by_date, select_all_ingredients
 
 # メインセッション系
 def get_today_str():
     return date.today().isoformat()
 
+
 def get_today_records():
-    return st.session_state.get("records_by_date", {}).get(get_today_str(), [])
+    records = st.session_state.consumption_records
+
+    filtered_records = [
+        v for v in records.values() if v["date"] == get_today_str()
+    ]
+
+    return filtered_records
 
 def get_totals(records):
     df = pd.DataFrame(records)
@@ -58,3 +66,18 @@ def add_ingredient_to_csv():
 
     if "form_data" in st.session_state:
         del st.session_state["form_data"]
+
+def init_session_state():
+
+    consumption_records = select_records_by_date(get_today_str())
+    ingredients = select_all_ingredients()
+    if "ingredients" not in st.session_state:
+        st.session_state.ingredients = {
+            item["id"]: {k: v for k, v in item.items() if k != "id"}
+            for item in ingredients
+        }
+    if "consumption_records" not in st.session_state:
+        st.session_state.consumption_records = {
+            item["id"]: {k: v for k, v in item.items() if k != "id"}
+            for item in consumption_records
+        }

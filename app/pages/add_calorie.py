@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import os
-from utils.helpers import get_today_str, get_today_records, get_totals, load_ingredients
+from utils.db import insert_consumption
+from utils.helpers import get_today_str, get_today_records, get_totals
 
 # session_storeの初期化
 if "add_calorie" not in st.session_state:
@@ -9,7 +10,6 @@ if "add_calorie" not in st.session_state:
 
 st.title("カロリー記録")
 
-records_by_date = st.session_state.setdefault("records_by_date", {})
 today_str = get_today_str()
 today_records = get_today_records()
 kcal, p, f, c = get_totals(today_records)
@@ -26,8 +26,7 @@ if today_records:
     st.dataframe(df, use_container_width=True)
 
 st.subheader("食材を追加")
-
-df = load_ingredients()
+df = pd.DataFrame(st.session_state.ingredients).T
 selected = st.selectbox("食材を選択", df["name"].tolist())
 selected_row = df[df["name"] == selected].iloc[0]
 # qty = st.number_input(f"何 {selected_row['unit']} 食べましたか？", min_value=0.0, step=0.1)
@@ -69,13 +68,18 @@ with col2:
 if st.button("追加"):
     factor = st.session_state["add_calorie"] / selected_row["amount"]
     record = {
-        "name": selected_row["name"],
-        "unit": selected_row["unit"],
-        "qty": st.session_state["add_calorie"],
+        "date": today_str,
+        "ingredient_id": int(selected_row.name),
+        "quantity": st.session_state["add_calorie"],
         "kcal": round(selected_row["kcal"] * factor, 1),
         "protein": round(selected_row["protein"] * factor, 1),
         "fat": round(selected_row["fat"] * factor, 1),
-        "carb": round(selected_row["carbohydrate"] * factor, 1),
+        "carb": round(selected_row["carb"] * factor, 1),
     }
-    records_by_date.setdefault(today_str, []).append(record)
+    record_id = insert_consumption(record)
+
+    record["name"] = selected_row["name"]
+    record["unit"] = selected_row["unit"]
+    st.session_state["consumption_records"][record_id] = record
+
     st.rerun()

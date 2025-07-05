@@ -7,6 +7,10 @@ SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
 # DBに接続（存在しなければ自動生成）
 def get_connection():
+    # ディレクトリ（data）が存在しなければ作成
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # DBに接続（存在しなければ自動生成）
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn

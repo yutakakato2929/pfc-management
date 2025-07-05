@@ -10,9 +10,6 @@ def main():
     # DB初期化
     init_db()
 
-    # session_stateの初期化
-    init_session_state()
-
     # ページの設定
     home_page = st.Page(CURRENT_DIR / "pages" / "home.py", title="ホーム", default=True)
     ui_chart_page = st.Page(CURRENT_DIR / "pages" / "ui_chart.py", title="統計")

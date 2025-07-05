@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px # type: ignore
 from datetime import datetime, timedelta
+from utils.helpers import get_user_id
+
+get_user_id()
 
 st.title("統計")
 

@@ -1,6 +1,9 @@
 import streamlit as st
 from utils.db import insert_ingredient
 from utils.components import create_input
+from utils.helpers import get_user_id
+
+get_user_id()
 
 # フォームデータの初期化
 def init_form_data():
@@ -74,6 +77,7 @@ with st.form("confirm_form"):
             for error in errors:
                 st.error(error)
         else:
+            form_data["user_id"] = st.session_state.user_id
             ingredient_id = insert_ingredient(form_data)
             st.session_state["ingredients"][ingredient_id] = form_data
             st.success("登録しました！")

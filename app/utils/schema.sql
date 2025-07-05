@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS ingredients (
     protein REAL NOT NULL,
     fat REAL NOT NULL,
     carb REAL NOT NULL,
-    note TEXT
+    note TEXT,
+    user_id TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS consumption_records (
@@ -20,5 +21,6 @@ CREATE TABLE IF NOT EXISTS consumption_records (
     protein REAL NOT NULL,
     fat REAL NOT NULL,
     carb REAL NOT NULL,
+    user_id TEXT NOT NULL,
     FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
-)
+);

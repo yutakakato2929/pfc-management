@@ -28,9 +28,9 @@ def insert_ingredient(row: dict):
         cur = conn.cursor()
         cur.execute("""
             INSERT INTO ingredients
-                    (name, unit, amount, kcal, protein, fat, carb, note)
+                    (name, unit, amount, kcal, protein, fat, carb, note, user_id)
             VALUES
-                    (?, ?, ?, ?, ?, ?, ?, ?)
+                    (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             row["name"],
             row["unit"],
@@ -39,7 +39,8 @@ def insert_ingredient(row: dict):
             row["protein"],
             row["fat"],
             row["carb"],
-            row.get("note", "")
+            row.get("note", ""),
+            row["user_id"]
         ))
         conn.commit()
         return cur.lastrowid  # ← 挿入した行のidを返す
@@ -49,9 +50,9 @@ def insert_consumption(row: dict):
         cur = conn.cursor()
         cur.execute("""
             INSERT INTO consumption_records 
-                    (date, ingredient_id, quantity, kcal, protein, fat, carb)
+                    (date, ingredient_id, quantity, kcal, protein, fat, carb, user_id)
             VALUES
-                    (?, ?, ?, ?, ?, ?, ?)
+                    (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             row["date"],
             row["ingredient_id"],
@@ -60,19 +61,20 @@ def insert_consumption(row: dict):
             row["protein"],
             row["fat"],
             row["carb"],
+            row["user_id"],
         ))
         conn.commit()
         return cur.lastrowid  # ← 挿入した行のidを返す
 
 # データ取得
-def select_all_ingredients():
+def select_all_ingredients(user_id: str = None):
     with get_connection() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM ingredients")
+        cur.execute("SELECT * FROM ingredients WHERE user_id = ? ORDER BY id ASC", (user_id,))
         rows = cur.fetchall()
         return [dict(row) for row in rows] 
     
-def select_all_records():
+def select_all_records(user_id: str = None):
     with get_connection() as conn:
         cur = conn.cursor()
         query = """
@@ -89,32 +91,33 @@ def select_all_records():
             cr.carb
         FROM consumption_records cr
         JOIN ingredients ing ON cr.ingredient_id = ing.id
+        WHERE cr.user_id = ?
         ORDER BY cr.id ASC
         """
-        cur.execute(query)
+        cur.execute(query, (user_id,))
         rows = cur.fetchall()
         return [dict(row) for row in rows]
 
-def select_records_by_date(date_str: str):
-    with get_connection() as conn:
-        cur = conn.cursor()
-        query = """
-        SELECT
-            cr.id,
-            cr.date,
-            cr.ingredient_id,
-            ing.name,
-            ing.unit,
-            cr.quantity,
-            cr.kcal,
-            cr.protein,
-            cr.fat,
-            cr.carb
-        FROM consumption_records cr
-        JOIN ingredients ing ON cr.ingredient_id = ing.id
-        WHERE cr.date = ?
-        ORDER BY cr.id ASC
-        """
-        cur.execute(query, (date_str,))
-        rows = cur.fetchall()
-        return [dict(row) for row in rows]
+# def select_records_by_date(date_str: str):
+#     with get_connection() as conn:
+#         cur = conn.cursor()
+#         query = """
+#         SELECT
+#             cr.id,
+#             cr.date,
+#             cr.ingredient_id,
+#             ing.name,
+#             ing.unit,
+#             cr.quantity,
+#             cr.kcal,
+#             cr.protein,
+#             cr.fat,
+#             cr.carb
+#         FROM consumption_records cr
+#         JOIN ingredients ing ON cr.ingredient_id = ing.id
+#         WHERE cr.date = ?
+#         ORDER BY cr.id ASC
+#         """
+#         cur.execute(query, (date_str,))
+#         rows = cur.fetchall()
+#         return [dict(row) for row in rows]

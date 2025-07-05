@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 from utils.db import insert_consumption
 from utils.components import show_pfc_selected_date, create_input
+from utils.helpers import get_user_id
+
+get_user_id()
 
 # フォームデータの初期化
 def init_add_calorie():
@@ -51,6 +54,7 @@ if st.button("追加"):
         "protein": round(selected_row["protein"] * factor, 1),
         "fat": round(selected_row["fat"] * factor, 1),
         "carb": round(selected_row["carb"] * factor, 1),
+        "user_id": st.session_state.user_id,
     }
     record_id = insert_consumption(record)
 

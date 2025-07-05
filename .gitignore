@@ -2,3 +2,4 @@ venv
 layout_idea.md
 sample.html
 *.db
+**/__pycache__/**

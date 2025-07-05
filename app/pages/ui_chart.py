@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils.helpers import get_today_records
+from utils.helpers import get_records_by_date, get_today_str
 
 st.title("統計")
 
-today_records = get_today_records()
+today_str = get_today_str()
+today_records = get_records_by_date(today_str)
 
 if not today_records:
     st.info("まだデータがありません。")

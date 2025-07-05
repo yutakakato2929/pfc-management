@@ -1,6 +1,5 @@
 import sqlite3
 from pathlib import Path
-from datetime import date
 
 # PATH設定
 DB_PATH = Path(__file__).parent.parent / "data" / "app.db"

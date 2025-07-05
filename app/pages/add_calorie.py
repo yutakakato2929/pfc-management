@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 from utils.db import insert_consumption
-from utils.helpers import get_today_str, get_today_records, get_totals
+from utils.helpers import get_today_str, get_records_by_date, get_totals
 
 # session_storeの初期化
 if "add_calorie" not in st.session_state:
@@ -11,7 +11,7 @@ if "add_calorie" not in st.session_state:
 st.title("カロリー記録")
 
 today_str = get_today_str()
-today_records = get_today_records()
+today_records = get_records_by_date(today_str)
 kcal, p, f, c = get_totals(today_records)
 
 st.subheader("今日の合計")

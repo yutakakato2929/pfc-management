@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
-from utils.helpers import get_today_records, get_totals, get_today_str
+from utils.helpers import get_records_by_date, get_totals, get_today_str
 from utils.ui_calendar import render_calendar_with_records
 
 today_str = get_today_str()
-today_records = get_today_records()
+today_records = get_records_by_date(today_str)
 kcal, p, f, c = get_totals(today_records)
 
 with st.container():

@@ -23,5 +23,11 @@ if "user_id" in st.session_state:
             st.dataframe(df_excluded, use_container_width=True, hide_index=True)
         else:
             st.info("No records yet.")
+
+        # for i in range(6):
+        #     cols = st.columns(7)
+        #     for col in cols:
+        #         with col:
+        #             st.write("カロリー")
 else:
     ask_user_id()
